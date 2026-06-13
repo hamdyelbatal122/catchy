@@ -5,7 +5,7 @@
   "main": "resources/js/catchy.js",
   "author": "Hamzi",
   "license": "MIT",
-  "peerDependencies": {
+  "dependencies": {
     "alpinejs": "^3.0.0",
     "@alpinejs/morph": "^3.0.0"
   }
