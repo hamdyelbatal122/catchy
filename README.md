@@ -434,6 +434,50 @@ Submits the entire form state in the background whenever a change is detected:
 </form>
 ```
 
+### Action Confirmation (`data-catchy-confirm`)
+To prevent accidental clicks on destructive actions (e.g. deleting items or leaving unsaved forms), add `data-catchy-confirm="message"` to any link or form. Catchy will automatically display a confirmation dialog before proceeding:
+```html
+<!-- Confirms link navigation -->
+<a href="/delete-account" data-catchy-confirm="Are you sure you want to permanently delete your account? This cannot be undone.">Delete Account</a>
+
+<!-- Confirms form submissions -->
+<x-catchy-form action="/settings/reset" method="POST" data-catchy-confirm="Are you sure you want to reset settings to default?">
+    <button type="submit">Reset Settings</button>
+</x-catchy-form>
+```
+
+#### Custom Modal Confirmation (`data-catchy-confirm-modal`)
+If you want to use a custom styled modal (instead of browser native `confirm()` popups) for confirmations:
+- `data-catchy-confirm-modal="modal-id"`: Placed on a form or link to open the specified modal.
+- `data-catchy-confirm-button`: Placed on the "Confirm/Yes" button inside your modal to proceed with the action.
+
+Example:
+```html
+<!-- Intercepts submit and opens custom modal -->
+<x-catchy-form action="/delete-photo" method="POST" data-catchy-confirm-modal="delete-modal">
+    <button type="submit">Delete Photo</button>
+</x-catchy-form>
+
+<!-- Your Custom Confirmation Modal -->
+<x-catchy-modal id="delete-modal" title="Confirm Delete">
+    <p>Are you sure you want to delete this photo?</p>
+    <div class="mt-4 flex gap-3">
+        <!-- Close button (standard Alpine/modal close) -->
+        <button type="button" @click="close()">Cancel</button>
+        <!-- Proceed button (marked with data-catchy-confirm-button) -->
+        <button type="button" data-catchy-confirm-button class="bg-red-600 text-white">Confirm</button>
+    </div>
+</x-catchy-modal>
+```
+
+### Connectivity & Offline Protection
+Catchy monitors client network status automatically.
+- **Offline Warnings**: If a user goes offline or online, Catchy dynamically fires success/error toasts warning the user of their connection status.
+- **Request Interception**: If a user attempts to click a link or submit a form while offline, Catchy intercepts the request early, halts the page crash, and prompts a friendly "Cannot navigate. You are currently offline" alert.
+
+### Automatic Focus Restoration (`autofocus` support)
+When pages transition in standard SPAs, the focus is lost. Catchy brings back native browser behaviors by scanning the morphed container and automatically focusing the first input with an `autofocus` or `data-catchy-autofocus` attribute.
+
 ### Scroll Position Control
 By default, Catchy scrolls the viewport to top on page transition. You can keep the current scroll position by adding `data-catchy-scroll="keep"` to links or form elements:
 ```html

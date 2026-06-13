@@ -57,6 +57,7 @@
         const activeRequests = new Map();
         let currentVersion = '';
         let hoverTimeout = null;
+        let pendingAction = null;
 
         // Built-in top loading bar
         let loaderElement = null;
@@ -434,6 +435,19 @@
         }
 
         /**
+         * Automatically sets focus on the first element with autofocus or data-catchy-autofocus attributes.
+         *
+         * @param {HTMLElement} container
+         */
+        function focusAutofocusElements(container) {
+            if (!container) return;
+            const autofocusEl = container.querySelector('[autofocus]') || container.querySelector('[data-catchy-autofocus]');
+            if (autofocusEl) {
+                autofocusEl.focus();
+            }
+        }
+
+        /**
          * Helper to wrap XHR in a Promise resembling a fetch Response.
          *
          * @param {string} url
@@ -548,6 +562,17 @@
          * @param {boolean} updateHistory
          */
         async function visit(url, options = {}, updateHistory = true) {
+            // Check internet connectivity
+            if (navigator.onLine === false) {
+                window.dispatchEvent(new CustomEvent('catchy:flash', {
+                    detail: { message: 'Cannot navigate. You are currently offline.', type: 'warning' }
+                }));
+                window.dispatchEvent(new CustomEvent('catchy-flash', {
+                    detail: { message: 'Cannot navigate. You are currently offline.', type: 'warning' }
+                }));
+                return;
+            }
+
             const oldPathname = window.location.pathname;
             // Save current scroll coordinates in history state before navigating away
             try {
@@ -929,6 +954,7 @@
                         }
                         Alpine.morph(mainContainer, incomingMain.outerHTML);
                         executeScriptsInContainer(mainContainer);
+                        focusAutofocusElements(mainContainer);
                     }
                 } else {
                     // Standard container morph
@@ -964,6 +990,7 @@
                     }
                     Alpine.morph(appContainer, incomingApp.outerHTML);
                     executeScriptsInContainer(appContainer);
+                    focusAutofocusElements(appContainer);
                 }
 
                 // Manage History Updates
@@ -1085,6 +1112,59 @@
             const target = event.target;
             if (!target || typeof target.closest !== 'function') return;
 
+            // Handle Confirm Button click inside a modal
+            const confirmBtn = target.closest('[data-catchy-confirm-button]');
+            if (confirmBtn && pendingAction) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                
+                const actionToRun = pendingAction.execute;
+                const modalId = pendingAction.modalId;
+                pendingAction = null; // Clear state first to prevent recursion
+                
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.dispatchEvent(new CustomEvent('catchy:modal-close', { bubbles: true }));
+                }
+                
+                actionToRun();
+                return;
+            }
+
+            // Handle Declarative Confirm via Custom Modal
+            const confirmModalEl = target.closest('[data-catchy-confirm-modal]');
+            if (confirmModalEl && (!pendingAction || pendingAction.trigger !== confirmModalEl)) {
+                const modalId = confirmModalEl.getAttribute('data-catchy-confirm-modal');
+                const link = target.closest('a');
+                if (link && !shouldIgnoreLink(link, event)) {
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    pendingAction = {
+                        trigger: confirmModalEl,
+                        modalId: modalId,
+                        execute: () => {
+                            visit(link.href, { trigger: link });
+                        }
+                    };
+                    const modal = document.getElementById(modalId);
+                    if (modal) {
+                        modal.dispatchEvent(new CustomEvent('catchy:modal-open', { bubbles: true }));
+                    }
+                    return;
+                }
+            }
+
+            // Handle Declarative Confirmation
+            const confirmEl = target.closest('[data-catchy-confirm]');
+            if (confirmEl) {
+                const confirmMsg = confirmEl.getAttribute('data-catchy-confirm');
+                if (confirmMsg && !confirm(confirmMsg)) {
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    return;
+                }
+            }
+
             // Handle Modal open/close trigger attributes
             const openModalEl = target.closest('[data-catchy-open-modal]');
             if (openModalEl) {
@@ -1156,6 +1236,35 @@
             const form = event.target && typeof event.target.closest === 'function' ? event.target.closest('form') : null;
             if (!form || shouldIgnoreForm(form)) return;
 
+            // Handle Confirm via Custom Modal
+            const confirmModalId = form.getAttribute('data-catchy-confirm-modal');
+            if (confirmModalId && (!pendingAction || pendingAction.trigger !== form)) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                
+                pendingAction = {
+                    trigger: form,
+                    modalId: confirmModalId,
+                    execute: () => {
+                        submitForm(form);
+                    }
+                };
+                
+                const modal = document.getElementById(confirmModalId);
+                if (modal) {
+                    modal.dispatchEvent(new CustomEvent('catchy:modal-open', { bubbles: true }));
+                }
+                return;
+            }
+
+            // Handle Declarative Confirmation
+            const confirmMsg = form.getAttribute('data-catchy-confirm');
+            if (confirmMsg && !confirm(confirmMsg)) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                return;
+            }
+
             event.preventDefault();
             submitForm(form);
         });
@@ -1164,6 +1273,37 @@
         window.addEventListener('popstate', (event) => {
             const state = event.state;
             visit(window.location.href, { state }, false);
+        });
+
+        // Global Event: Connectivity monitoring
+        window.addEventListener('offline', () => {
+            window.dispatchEvent(new CustomEvent('catchy:flash', {
+                detail: { message: 'No internet connection. Operating in offline mode.', type: 'danger' }
+            }));
+            window.dispatchEvent(new CustomEvent('catchy-flash', {
+                detail: { message: 'No internet connection. Operating in offline mode.', type: 'danger' }
+            }));
+        });
+
+        window.addEventListener('online', () => {
+            window.dispatchEvent(new CustomEvent('catchy:flash', {
+                detail: { message: 'Connection restored. Back online!', type: 'success' }
+            }));
+            window.dispatchEvent(new CustomEvent('catchy-flash', {
+                detail: { message: 'Connection restored. Back online!', type: 'success' }
+            }));
+        });
+
+        // Reset pending action when modal is closed
+        document.addEventListener('catchy:modal-closed', (event) => {
+            if (pendingAction && pendingAction.modalId === event.target.id) {
+                pendingAction = null;
+            }
+        });
+        document.addEventListener('catchy-modal-closed', (event) => {
+            if (pendingAction && pendingAction.modalId === event.target.id) {
+                pendingAction = null;
+            }
         });
 
         // Initialize Viewport Prefetching
@@ -1270,6 +1410,7 @@
                         if (incoming && current) {
                             Alpine.morph(current, incoming.outerHTML);
                             executeScriptsInContainer(current);
+                            focusAutofocusElements(current);
                         }
                     }
                 } catch (e) {

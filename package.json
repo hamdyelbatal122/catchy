@@ -1,6 +1,6 @@
 {
   "name": "hamzi-catchy",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Alpine.js SPA plugin for the Laravel Catchy package.",
   "main": "resources/js/catchy.js",
   "author": "Hamzi",
