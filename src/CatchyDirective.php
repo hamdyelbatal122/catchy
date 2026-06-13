@@ -41,4 +41,25 @@ class CatchyDirective
 
         return implode(' ', $attributes);
     }
+
+    /**
+     * Cache storage for JavaScript file contents, keyed by file path.
+     *
+     * @var array
+     */
+    private static array $jsCache = [];
+
+    /**
+     * Retrieve the cached JavaScript contents or read from disk if not cached.
+     *
+     * @param  string  $path
+     * @return string
+     */
+    public static function getJavaScript(string $path): string
+    {
+        if (!isset(self::$jsCache[$path])) {
+            self::$jsCache[$path] = file_exists($path) ? file_get_contents($path) : '';
+        }
+        return self::$jsCache[$path];
+    }
 }

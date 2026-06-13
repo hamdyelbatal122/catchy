@@ -138,6 +138,77 @@
         }
 
         /**
+         * Re-evaluates and executes any script tags inside the morphed container.
+         *
+         * @param {HTMLElement} container
+         */
+        function executeScriptsInContainer(container) {
+            if (!container) return;
+            const scripts = container.querySelectorAll('script');
+            scripts.forEach(oldScript => {
+                if (oldScript.hasAttribute('data-catchy-ignore')) return;
+
+                const newScript = document.createElement('script');
+                Array.from(oldScript.attributes).forEach(attr => {
+                    newScript.setAttribute(attr.name, attr.value);
+                });
+                newScript.textContent = oldScript.textContent;
+                oldScript.parentNode.replaceChild(newScript, oldScript);
+            });
+        }
+
+        /**
+         * Merges head metadata, styles, and scripts from incoming document to current document.
+         *
+         * @param {HTMLHeadElement} incomingHead
+         */
+        function mergeHead(incomingHead) {
+            if (!incomingHead) return;
+
+            // Merge meta tags (by name, property, or http-equiv)
+            const currentMetaTags = Array.from(document.head.querySelectorAll('meta'));
+            const incomingMetaTags = Array.from(incomingHead.querySelectorAll('meta'));
+
+            incomingMetaTags.forEach(incomingMeta => {
+                const name = incomingMeta.getAttribute('name');
+                const property = incomingMeta.getAttribute('property');
+                const httpEquiv = incomingMeta.getAttribute('http-equiv');
+
+                let existingMeta = null;
+                if (name) {
+                    existingMeta = currentMetaTags.find(m => m.getAttribute('name') === name);
+                } else if (property) {
+                    existingMeta = currentMetaTags.find(m => m.getAttribute('property') === property);
+                } else if (httpEquiv) {
+                    existingMeta = currentMetaTags.find(m => m.getAttribute('http-equiv') === httpEquiv);
+                }
+
+                if (existingMeta) {
+                    if (existingMeta.getAttribute('content') !== incomingMeta.getAttribute('content')) {
+                        existingMeta.setAttribute('content', incomingMeta.getAttribute('content'));
+                    }
+                } else {
+                    document.head.appendChild(incomingMeta.cloneNode(true));
+                }
+            });
+
+            // Merge link tags (stylesheets, fonts, etc., by href)
+            const currentLinks = Array.from(document.head.querySelectorAll('link'));
+            const incomingLinks = Array.from(incomingHead.querySelectorAll('link'));
+
+            incomingLinks.forEach(incomingLink => {
+                const href = incomingLink.getAttribute('href');
+                const rel = incomingLink.getAttribute('rel');
+                if (href) {
+                    const exists = currentLinks.some(l => l.getAttribute('href') === href && l.getAttribute('rel') === rel);
+                    if (!exists) {
+                        document.head.appendChild(incomingLink.cloneNode(true));
+                    }
+                }
+            });
+        }
+
+        /**
          * Inspects client cache map for validated response cache.
          *
          * @param {string} url
@@ -424,7 +495,7 @@
                     submitBtn.dataset.originalHtml = submitBtn.innerHTML;
                     submitBtn.disabled = true;
                     submitBtn.classList.add('pointer-events-none');
-                    const spinnerHtml = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-current inline-block align-text-bottom" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" style="vertical-align: middle;"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> `;
+                    const spinnerHtml = `<svg class="animate-spin -ms-1 me-2 h-4 w-4 text-current inline-block align-text-bottom" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" style="vertical-align: middle;"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> `;
                     submitBtn.innerHTML = spinnerHtml + submitBtn.innerHTML;
                 }
             }
@@ -634,6 +705,10 @@
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
 
+                if (doc.head) {
+                    mergeHead(doc.head);
+                }
+
                 // Check for modal routing
                 const isModalTarget = options.modal || (trigger && typeof trigger.hasAttribute === 'function' && trigger.hasAttribute('data-catchy-modal'));
 
@@ -708,6 +783,7 @@
                             return;
                         }
                         Alpine.morph(mainContainer, incomingMain.outerHTML);
+                        executeScriptsInContainer(mainContainer);
                     }
                 } else {
                     // Standard container morph
@@ -742,6 +818,7 @@
                         return;
                     }
                     Alpine.morph(appContainer, incomingApp.outerHTML);
+                    executeScriptsInContainer(appContainer);
                 }
 
                 // Manage History Updates
@@ -763,7 +840,11 @@
                     });
                 } else {
                     const finalURLObj = new URL(finalUrl);
-                    if (finalURLObj.hash) {
+                    const keepScroll = trigger && typeof trigger.getAttribute === 'function' && trigger.getAttribute('data-catchy-scroll') === 'keep';
+                    
+                    if (keepScroll) {
+                        // Do not change scroll position
+                    } else if (finalURLObj.hash) {
                         const el = document.querySelector(finalURLObj.hash);
                         if (el) {
                             el.scrollIntoView();
@@ -896,7 +977,49 @@
             visit(window.location.href, { state }, false);
         });
 
+        // Initialize Viewport Prefetching
+        function initViewportPrefetching() {
+            if (typeof IntersectionObserver === 'undefined') return;
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const link = entry.target;
+                        if (link.href && !shouldIgnoreLink(link, null)) {
+                            prefetch(link.href);
+                        }
+                        observer.unobserve(link);
+                    }
+                });
+            }, { rootMargin: '50px' });
+
+            const observeLinks = (rootNode = document) => {
+                const links = rootNode.querySelectorAll('a[data-catchy-prefetch="viewport"]');
+                links.forEach(link => observer.observe(link));
+            };
+
+            observeLinks();
+
+            const mutationObserver = new MutationObserver((mutations) => {
+                mutations.forEach(mutation => {
+                    mutation.addedNodes.forEach(node => {
+                        if (node.nodeType === Node.ELEMENT_NODE) {
+                            if (node.tagName === 'A' && node.getAttribute('data-catchy-prefetch') === 'viewport') {
+                                observer.observe(node);
+                            } else {
+                                observeLinks(node);
+                            }
+                        }
+                    });
+                });
+            });
+
+            mutationObserver.observe(document.body, { childList: true, subtree: true });
+        }
+
+        initViewportPrefetching();
+
         // Expose public API
-        Alpine.catchy = { visit, prefetch, cache };
+        Alpine.catchy = { visit, prefetch, cache, startLoading, stopLoading };
     };
 }));

@@ -107,7 +107,7 @@ class ComponentTest extends TestCase
         $html = Blade::render('<x-catchy-toast position="bottom-right" duration="5000" />');
 
         $this->assertStringContainsString('@catchy:flash.window', $html);
-        $this->assertStringContainsString('bottom-5 right-5', $html);
+        $this->assertStringContainsString('bottom-5 end-5', $html);
     }
 
     /**
@@ -134,6 +134,51 @@ class ComponentTest extends TestCase
         $this->assertStringContainsString('accept="image/*"', $html);
         $this->assertStringContainsString('multiple', $html);
         $this->assertStringContainsString('حمل صورتك', $html);
+    }
+
+    /**
+     * Verify that components render translation strings based on current locale.
+     */
+    public function test_components_use_translations_based_on_locale(): void
+    {
+        // 1. Test Arabic locale (should load Arabic text by default)
+        $this->app->setLocale('ar');
+        
+        $progressHtml = Blade::render('<x-catchy-progress />');
+        $this->assertStringContainsString('جاري تحميل الملفات...', $progressHtml);
+
+        $uploadHtml = Blade::render('<x-catchy-upload name="doc" />');
+        $this->assertStringContainsString('اسحب الملفات هنا أو انقر للاختيار', $uploadHtml);
+
+        // 2. Test English locale (should load English text by default)
+        $this->app->setLocale('en');
+
+        $progressHtmlEn = Blade::render('<x-catchy-progress />');
+        $this->assertStringContainsString('Loading files...', $progressHtmlEn);
+
+        $uploadHtmlEn = Blade::render('<x-catchy-upload name="doc" />');
+        $this->assertStringContainsString('Drag &amp; drop files here or click to browse', $uploadHtmlEn);
+    }
+
+    /**
+     * Verify that CatchyDirective getJavaScript successfully caches the JS file contents in memory.
+     */
+    public function test_directive_caches_javascript_in_memory(): void
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'catchy_test');
+        file_put_contents($tempFile, 'console.log("Cached JS");');
+
+        $content1 = \Hamzi\Catchy\CatchyDirective::getJavaScript($tempFile);
+        $this->assertEquals('console.log("Cached JS");', $content1);
+
+        // Modify the file on disk
+        file_put_contents($tempFile, 'console.log("Modified JS");');
+
+        // Reading again should return cached content
+        $content2 = \Hamzi\Catchy\CatchyDirective::getJavaScript($tempFile);
+        $this->assertEquals('console.log("Cached JS");', $content2);
+
+        unlink($tempFile);
     }
 }
 

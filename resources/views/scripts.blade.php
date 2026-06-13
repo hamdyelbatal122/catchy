@@ -1,7 +1,11 @@
 @php
-    $js = (isset($jsPath) && file_exists($jsPath)) 
-        ? file_get_contents($jsPath) 
-        : 'console.warn("Catchy: resources/js/catchy.js not found.");';
+    $usePublished = file_exists(public_path('vendor/catchy/catchy.js'));
+    $js = '';
+    if (!$usePublished) {
+        $js = isset($jsPath) 
+            ? \Hamzi\Catchy\CatchyDirective::getJavaScript($jsPath)
+            : 'console.warn("Catchy: resources/js/catchy.js not found.");';
+    }
 @endphp
 
 @if(config('catchy.include_morph', true))
@@ -21,6 +25,10 @@
     ]) !!};
 </script>
 
-<script>
-    {!! $js !!}
-</script>
+@if($usePublished)
+    <script src="{{ asset('vendor/catchy/catchy.js') }}" defer></script>
+@else
+    <script>
+        {!! $js !!}
+    </script>
+@endif
