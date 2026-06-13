@@ -516,6 +516,7 @@
 
                 // Manage History Updates
                 const shouldUpdateHistory = updateHistory && 
+                    (isGet || (response && response.redirected)) &&
                     (!trigger || typeof trigger.getAttribute !== 'function' || trigger.getAttribute('data-catchy-history') !== 'false') &&
                     (!trigger || typeof trigger.hasAttribute !== 'function' || !trigger.hasAttribute('data-catchy-modal'));
 
