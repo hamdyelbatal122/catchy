@@ -332,6 +332,41 @@ Options:
 
 ## Advanced Options & APIs
 
+### Declarative Trigger Actions (Modal & Drawer Actions)
+Catchy allows you to open or close Modals and Off-Canvas Drawers declaratively from click actions or upon form submissions success/failure without writing any Alpine or custom JS.
+
+#### 1. On Click Actions
+Add these attributes to buttons, links, or any clickable element to toggle modals or drawers:
+- `data-catchy-open-modal="modal-id"`: Opens the specified modal.
+- `data-catchy-close-modal="modal-id"`: Closes the specified modal.
+- `data-catchy-open-offcanvas="drawer-id"`: Opens the specified drawer.
+- `data-catchy-close-offcanvas="drawer-id"`: Closes the specified drawer.
+
+Example:
+```html
+<!-- Opens a modal on click -->
+<button data-catchy-open-modal="auth-modal" class="btn">Login</button>
+
+<!-- Closes the modal from inside or outside -->
+<button data-catchy-close-modal="auth-modal">Cancel</button>
+```
+
+#### 2. On Form Success / Error Actions
+Apply these attributes directly to form tags (e.g. `<x-catchy-form>` or a regular form) to trigger components automatically depending on the request outcome:
+- `data-catchy-success-open-modal="modal-id"`: Opens modal when form submits successfully.
+- `data-catchy-success-close-modal="modal-id"`: Closes modal when form submits successfully (ideal for editing forms inside modals).
+- `data-catchy-success-open-offcanvas="drawer-id"` / `data-catchy-success-close-offcanvas="drawer-id"`: Triggers off-canvas on successful form submit.
+- `data-catchy-error-open-modal="modal-id"`: Opens error details modal on failure.
+
+Example:
+```html
+<!-- Form inside a modal that automatically closes the modal on success -->
+<x-catchy-form action="/update-profile" method="POST" data-catchy-success-close-modal="edit-profile-modal">
+    <input type="text" name="name" required>
+    <button type="submit">Update</button>
+</x-catchy-form>
+```
+
 ### Scroll Position Control
 By default, Catchy scrolls the viewport to top on page transition. You can keep the current scroll position by adding `data-catchy-scroll="keep"` to links or form elements:
 ```html

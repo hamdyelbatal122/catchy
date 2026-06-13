@@ -380,6 +380,41 @@
         }
 
         /**
+         * Declaratively handles opening/closing of modals and offcanvas drawers 
+         * based on request success/error state.
+         *
+         * @param {HTMLElement} trigger
+         * @param {string} type ('success' | 'error')
+         */
+        function handleLifecycleTriggers(trigger, type) {
+            if (!trigger || typeof trigger.getAttribute !== 'function') return;
+
+            const openModal = trigger.getAttribute(`data-catchy-${type}-open-modal`);
+            if (openModal) {
+                const m = document.getElementById(openModal);
+                if (m) m.dispatchEvent(new CustomEvent('catchy:modal-open', { bubbles: true }));
+            }
+
+            const closeModal = trigger.getAttribute(`data-catchy-${type}-close-modal`);
+            if (closeModal) {
+                const m = document.getElementById(closeModal);
+                if (m) m.dispatchEvent(new CustomEvent('catchy:modal-close', { bubbles: true }));
+            }
+
+            const openOffcanvas = trigger.getAttribute(`data-catchy-${type}-open-offcanvas`);
+            if (openOffcanvas) {
+                const oc = document.getElementById(openOffcanvas);
+                if (oc) oc.dispatchEvent(new CustomEvent('catchy:offcanvas-open', { bubbles: true }));
+            }
+
+            const closeOffcanvas = trigger.getAttribute(`data-catchy-${type}-close-offcanvas`);
+            if (closeOffcanvas) {
+                const oc = document.getElementById(closeOffcanvas);
+                if (oc) oc.dispatchEvent(new CustomEvent('catchy:offcanvas-close', { bubbles: true }));
+            }
+        }
+
+        /**
          * Helper to wrap XHR in a Promise resembling a fetch Response.
          *
          * @param {string} url
@@ -772,6 +807,7 @@
                         stopLoading();
 
                         executeCallback(trigger, 'data-catchy-success', { url: finalUrl, trigger });
+                        handleLifecycleTriggers(trigger, 'success');
                         restoreSubmitButton();
 
                         trigger.dispatchEvent(new CustomEvent('catchy:end', {
@@ -810,6 +846,7 @@
                         stopLoading();
 
                         executeCallback(trigger, 'data-catchy-success', { url: finalUrl, trigger });
+                        handleLifecycleTriggers(trigger, 'success');
                         restoreSubmitButton();
 
                         trigger.dispatchEvent(new CustomEvent('catchy:end', {
@@ -951,6 +988,7 @@
                 stopLoading();
 
                 executeCallback(trigger, 'data-catchy-success', { url: finalUrl, trigger });
+                handleLifecycleTriggers(trigger, 'success');
                 restoreSubmitButton();
 
                 trigger.dispatchEvent(new CustomEvent('catchy:end', {
@@ -967,6 +1005,7 @@
                 console.error('Catchy: AJAX request error, falling back to full load.', error);
 
                 executeCallback(trigger, 'data-catchy-error', { url, error, trigger });
+                handleLifecycleTriggers(trigger, 'error');
                 restoreSubmitButton();
 
                 trigger.dispatchEvent(new CustomEvent('catchy:error', {
@@ -1024,11 +1063,53 @@
 
         // Global Event: Click interceptor
         document.addEventListener('click', (event) => {
-            const link = event.target && typeof event.target.closest === 'function' ? event.target.closest('a') : null;
-            if (!link || shouldIgnoreLink(link, event)) return;
+            const target = event.target;
+            if (!target || typeof target.closest !== 'function') return;
 
-            event.preventDefault();
-            visit(link.href, { trigger: link });
+            // Handle Modal open/close trigger attributes
+            const openModalEl = target.closest('[data-catchy-open-modal]');
+            if (openModalEl) {
+                const modalId = openModalEl.getAttribute('data-catchy-open-modal');
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.dispatchEvent(new CustomEvent('catchy:modal-open', { bubbles: true }));
+                }
+            }
+
+            const closeModalEl = target.closest('[data-catchy-close-modal]');
+            if (closeModalEl) {
+                const modalId = closeModalEl.getAttribute('data-catchy-close-modal');
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.dispatchEvent(new CustomEvent('catchy:modal-close', { bubbles: true }));
+                }
+            }
+
+            // Handle Offcanvas open/close trigger attributes
+            const openOffcanvasEl = target.closest('[data-catchy-open-offcanvas]');
+            if (openOffcanvasEl) {
+                const offcanvasId = openOffcanvasEl.getAttribute('data-catchy-open-offcanvas');
+                const offcanvas = document.getElementById(offcanvasId);
+                if (offcanvas) {
+                    offcanvas.dispatchEvent(new CustomEvent('catchy:offcanvas-open', { bubbles: true }));
+                }
+            }
+
+            const closeOffcanvasEl = target.closest('[data-catchy-close-offcanvas]');
+            if (closeOffcanvasEl) {
+                const offcanvasId = closeOffcanvasEl.getAttribute('data-catchy-close-offcanvas');
+                const offcanvas = document.getElementById(offcanvasId);
+                if (offcanvas) {
+                    offcanvas.dispatchEvent(new CustomEvent('catchy:offcanvas-close', { bubbles: true }));
+                }
+            }
+
+            // Normal link SPA routing
+            const link = target.closest('a');
+            if (link && !shouldIgnoreLink(link, event)) {
+                event.preventDefault();
+                visit(link.href, { trigger: link });
+            }
         });
 
         // Global Event: Hover (prefetch) interceptor
