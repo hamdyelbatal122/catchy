@@ -1,0 +1,50 @@
+{
+    "name": "hamzi/catchy",
+    "description": "Convert standard Laravel applications into SPAs using Alpine.js and HTML-over-the-wire.",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Hamzi",
+            "email": "hamzi@example.com"
+        }
+    ],
+    "keywords": [
+        "laravel",
+        "spa",
+        "alpine",
+        "alpinejs",
+        "morph",
+        "html-over-the-wire",
+        "blade",
+        "pjax"
+    ],
+    "require": {
+        "php": "^8.2",
+        "illuminate/support": "^11.0 || ^12.0 || ^13.0",
+        "illuminate/http": "^11.0 || ^12.0 || ^13.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Hamzi\\Catchy\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Hamzi\\Catchy\\Tests\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9.0 || ^10.0",
+        "phpunit/phpunit": "^10.0 || ^11.0"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Hamzi\\Catchy\\CatchyServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

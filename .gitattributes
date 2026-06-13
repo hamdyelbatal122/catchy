@@ -1,0 +1,9 @@
+# Normalize line endings
+* text=auto
+
+# Exclude files from exports (Composer downloads)
+/tests export-ignore
+phpunit.xml export-ignore
+.gitignore export-ignore
+.gitattributes export-ignore
+/config/catchy.php export-ignore
