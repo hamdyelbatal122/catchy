@@ -2,14 +2,13 @@
     'type' => 'text',
     'lines' => 1,
     'animate' => 'pulse',
-    'class' => ''
 ])
 
 @php
     $animation = $animate === 'pulse' ? 'animate-pulse' : '';
 @endphp
 
-<div class="{{ $animation }} space-y-3 {{ $class }}">
+<div {{ $attributes->merge(['class' => "{$animation} space-y-3"]) }}>
     @if ($type === 'circle')
         <div class="rounded-full bg-gray-200 dark:bg-slate-700 h-12 w-12"></div>
     @elseif ($type === 'title')

@@ -14,6 +14,9 @@
 @endphp
 
 <div
+    {{ $attributes->merge([
+        'class' => "fixed {$positionClass} z-50 flex flex-col gap-3 w-full max-w-sm pointer-events-none"
+    ]) }}
     x-data="{
         toasts: [],
         add(message, type = 'success') {
@@ -48,7 +51,6 @@
         @if(session()->has('info')) add(@js(session('info')), 'info'); @endif
         @if(session()->has('status')) add(@js(session('status')), 'info'); @endif
     "
-    class="fixed {{ $positionClass }} z-50 flex flex-col gap-3 w-full max-w-sm pointer-events-none"
 >
     <template x-for="toast in toasts" :key="toast.id">
         <div

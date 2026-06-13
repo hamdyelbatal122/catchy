@@ -21,7 +21,13 @@
 @endphp
 
 <div
-    id="{{ $id }}"
+    {{ $attributes->merge([
+        'id' => $id,
+        'class' => 'fixed inset-0 z-50 overflow-y-auto',
+        'style' => 'display: none;',
+        'role' => 'dialog',
+        'aria-modal' => 'true'
+    ]) }}
     catchy-modal
     x-data="{ 
         isOpen: false, 
@@ -50,10 +56,6 @@
     @catchy-modal-close.window="close()"
     @catchy-modal-open.window="open($event.detail.html || '', $event.detail.title || '')"
     @keydown.escape.window="close()"
-    class="fixed inset-0 z-50 overflow-y-auto"
-    style="display: none;"
-    role="dialog"
-    aria-modal="true"
 >
     <!-- Backdrop -->
     <div

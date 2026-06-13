@@ -249,9 +249,23 @@
                         currentVersion = version;
                     }
 
+                    const titleHeader = response.headers.get('X-Catchy-Title');
+                    let title = '';
+                    if (titleHeader) {
+                        try {
+                            const binaryString = atob(titleHeader);
+                            const bytes = new Uint8Array(binaryString.length);
+                            for (let i = 0; i < binaryString.length; i++) {
+                                bytes[i] = binaryString.charCodeAt(i);
+                            }
+                            title = new TextDecoder('utf-8').decode(bytes);
+                        } catch (e) {}
+                    }
+
                     const cacheEntry = {
                         html,
                         version,
+                        title,
                         finalUrl: response.url || url,
                         timestamp: Date.now()
                     };
@@ -291,6 +305,75 @@
             } catch (e) {
                 console.error(`Catchy: Error in ${attrName} callback execution:`, e);
             }
+        }
+
+        /**
+         * Helper to wrap XHR in a Promise resembling a fetch Response.
+         *
+         * @param {string} url
+         * @param {Object} options
+         * @returns {Promise<Object>}
+         */
+        function xhrRequest(url, options = {}) {
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open(options.method || 'GET', url);
+
+                // Set headers
+                if (options.headers) {
+                    Object.entries(options.headers).forEach(([key, val]) => {
+                        xhr.setRequestHeader(key, val);
+                    });
+                }
+
+                // Add progress tracking
+                if (xhr.upload && options.trigger) {
+                    xhr.upload.addEventListener('progress', (e) => {
+                        const percent = e.lengthComputable ? Math.round((e.loaded / e.total) * 100) : 0;
+                        const progressDetail = { loaded: e.loaded, total: e.total, percent, trigger: options.trigger };
+                        
+                        options.trigger.dispatchEvent(new CustomEvent('catchy:progress', {
+                            bubbles: true,
+                            detail: progressDetail
+                        }));
+                        options.trigger.dispatchEvent(new CustomEvent('catchy-progress', {
+                            bubbles: true,
+                            detail: progressDetail
+                        }));
+                    });
+                }
+
+                xhr.onload = () => {
+                    const headersMap = new Map();
+                    const rawHeaders = xhr.getAllResponseHeaders();
+                    rawHeaders.split('\r\n').forEach(line => {
+                        const parts = line.split(': ');
+                        const header = parts.shift().toLowerCase();
+                        const value = parts.join(': ');
+                        if (header) {
+                            headersMap.set(header, value);
+                        }
+                    });
+
+                    const responseLike = {
+                        status: xhr.status,
+                        ok: xhr.status >= 200 && xhr.status < 300,
+                        url: xhr.responseURL || url,
+                        redirected: xhr.responseURL && xhr.responseURL !== url,
+                        headers: {
+                            get: (name) => headersMap.get(name.toLowerCase()) || null
+                        },
+                        text: () => Promise.resolve(xhr.responseText)
+                    };
+                    resolve(responseLike);
+                };
+
+                xhr.onerror = () => {
+                    reject(new Error('Catchy: XHR Request failed'));
+                };
+
+                xhr.send(options.body || null);
+            });
         }
 
         /**
@@ -368,6 +451,9 @@
                     html = cached.html;
                     finalUrl = cached.finalUrl;
                     version = cached.version;
+                    if (cached.title) {
+                        document.title = cached.title;
+                    }
                 } else {
                     // Check if there is an active prefetch running for this URL
                     let responseData = null;
@@ -379,6 +465,9 @@
                         html = responseData.html;
                         finalUrl = responseData.finalUrl;
                         version = responseData.version;
+                        if (responseData.title) {
+                            document.title = responseData.title;
+                        }
                     } else {
                         // Perform live fetch
                         const fetchHeaders = {
@@ -394,7 +483,11 @@
                             headers: fetchHeaders
                         };
 
-                        response = await fetch(url, fetchOptions);
+                        if (options.method && options.method.toUpperCase() !== 'GET') {
+                            response = await xhrRequest(url, fetchOptions);
+                        } else {
+                            response = await fetch(url, fetchOptions);
+                        }
 
                         // If version mismatch (409 Conflict), force immediate hard reload of target URL
                         if (response.status === 409) {
@@ -458,11 +551,31 @@
                             }
                         }
 
+                        // Decode and set title if present in headers
+                        let title = '';
+                        const titleHeader = response.headers.get('X-Catchy-Title');
+                        if (titleHeader) {
+                            try {
+                                const binaryString = atob(titleHeader);
+                                const bytes = new Uint8Array(binaryString.length);
+                                for (let i = 0; i < binaryString.length; i++) {
+                                    bytes[i] = binaryString.charCodeAt(i);
+                                }
+                                title = new TextDecoder('utf-8').decode(bytes);
+                                if (title) {
+                                    document.title = title;
+                                }
+                            } catch (e) {
+                                console.error('Catchy: Failed to decode X-Catchy-Title header', e);
+                            }
+                        }
+
                         // Cache GET requests
                         if (isGet) {
                             cache.set(url, {
                                 html,
                                 version,
+                                title,
                                 finalUrl,
                                 timestamp: Date.now()
                             });

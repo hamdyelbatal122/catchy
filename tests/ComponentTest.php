@@ -109,5 +109,31 @@ class ComponentTest extends TestCase
         $this->assertStringContainsString('@catchy:flash.window', $html);
         $this->assertStringContainsString('bottom-5 right-5', $html);
     }
+
+    /**
+     * Verify that the progress component compiles and renders correct structure.
+     */
+    public function test_progress_component_renders(): void
+    {
+        $html = Blade::render('<x-catchy-progress color="success" height="h-4" label="تنزيل الملفات" />');
+
+        $this->assertStringContainsString('bg-emerald-500', $html);
+        $this->assertStringContainsString('h-4', $html);
+        $this->assertStringContainsString('تنزيل الملفات', $html);
+        $this->assertStringContainsString('catchy-progress', $html);
+    }
+
+    /**
+     * Verify that the upload component compiles and renders correct structure.
+     */
+    public function test_upload_component_renders(): void
+    {
+        $html = Blade::render('<x-catchy-upload name="avatar" label="حمل صورتك" accept="image/*" multiple />');
+
+        $this->assertStringContainsString('name="avatar"', $html);
+        $this->assertStringContainsString('accept="image/*"', $html);
+        $this->assertStringContainsString('multiple', $html);
+        $this->assertStringContainsString('حمل صورتك', $html);
+    }
 }
 

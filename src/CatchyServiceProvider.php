@@ -76,6 +76,8 @@ class CatchyServiceProvider extends ServiceProvider
             'form'     => 'catchy-form',
             'modal'    => 'catchy-modal',
             'toast'    => 'catchy-toast',
+            'progress' => 'catchy-progress',
+            'upload'   => 'catchy-upload',
         ];
 
         foreach ($components as $view => $alias) {
