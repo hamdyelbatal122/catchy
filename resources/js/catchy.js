@@ -562,7 +562,10 @@
                     detail: { url, error, trigger }
                 }));
 
-                window.location.href = url;
+                const isGet = !options.method || options.method.toUpperCase() === 'GET';
+                if (isGet) {
+                    window.location.href = url;
+                }
             }
         }
 

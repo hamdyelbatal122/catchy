@@ -5,6 +5,12 @@ All notable changes to `Laravel Catchy` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.5] - 2026-06-13
+
+### Fixed
+- Prevented POST validation failures from causing MethodNotAllowedHttpException by limiting the `catchy.js` catch block redirect fallback only to GET requests.
+- Resolved Alpine expression compilation error (`Unexpected token 'for'`) in `<x-catchy-toast>` component by changing `for-of` loop to `Object.entries().forEach()`.
+
 ## [1.0.4] - 2026-06-13
 
 ### Changed

@@ -36,9 +36,7 @@
         }
     }"
     @catchy:flash.window="
-        for (const [type, msg] of Object.entries($event.detail)) {
-            add(msg, type);
-        }
+        Object.entries($event.detail).forEach(([type, msg]) => add(msg, type))
     "
     x-init="
         @if(session()->has('success')) add(@js(session('success')), 'success'); @endif
