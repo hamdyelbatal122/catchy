@@ -23,15 +23,29 @@
         addFiles(fileList) {
             if (this.updating) return;
             this.error = '';
-            const newFiles = Array.from(fileList);
+            const newFiles = Array.from(fileList).map(file => {
+                if (file.type.startsWith('image/')) {
+                    file.previewUrl = URL.createObjectURL(file);
+                }
+                return file;
+            });
             if ({{ $multiple ? 'true' : 'false' }}) {
                 this.files = [...this.files, ...newFiles];
             } else {
+                this.files.forEach(file => {
+                    if (file.previewUrl) {
+                        URL.revokeObjectURL(file.previewUrl);
+                    }
+                });
                 this.files = newFiles.slice(0, 1);
             }
             this.updateInput();
         },
         removeFile(index) {
+            const file = this.files[index];
+            if (file && file.previewUrl) {
+                URL.revokeObjectURL(file.previewUrl);
+            }
             this.files.splice(index, 1);
             this.updateInput();
         },
@@ -57,13 +71,20 @@
             return file.type.startsWith('image/');
         },
         getPreviewUrl(file) {
-            return URL.createObjectURL(file);
+            return file.previewUrl || '';
         },
         handleValidationErrors(event) {
             const key = '{{ $name }}'.replace(/\[\]/g, '').replace(/\[/g, '.').replace(/\]/g, '');
             if (event.detail && event.detail[key]) {
                 this.error = event.detail[key][0];
             }
+        },
+        destroy() {
+            this.files.forEach(file => {
+                if (file.previewUrl) {
+                    URL.revokeObjectURL(file.previewUrl);
+                }
+            });
         }
     }"
     x-on:catchy-validation-errors.window="handleValidationErrors($event)"

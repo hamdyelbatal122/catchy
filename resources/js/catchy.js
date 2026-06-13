@@ -27,6 +27,7 @@
      * @param {Object} Alpine
      */
     return function CatchyPlugin(Alpine) {
+        "use strict";
 
         // Defer morph plugin warning check to prevent race conditions during CDN/bundle loads
         setTimeout(() => {

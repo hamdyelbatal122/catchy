@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Hamzi\Catchy\Http\Middleware;
 
 use Closure;
@@ -83,7 +85,7 @@ class CatchySPAMiddleware
             if ($request->hasSession()) {
                 foreach (['success', 'error', 'warning', 'info', 'status'] as $key) {
                     if ($request->session()->has($key)) {
-                        $flash[$key] = $request->session()->get($key);
+                        $flash[$key] = $request->session()->pull($key);
                     }
                 }
 
@@ -124,7 +126,7 @@ class CatchySPAMiddleware
             $flash = [];
             foreach (['success', 'error', 'warning', 'info', 'status'] as $key) {
                 if ($request->session()->has($key)) {
-                    $flash[$key] = $request->session()->get($key);
+                    $flash[$key] = $request->session()->pull($key);
                 }
             }
 
