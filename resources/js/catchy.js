@@ -380,6 +380,30 @@
                             throw new Error(`Catchy: Request failed with status ${response.status}`);
                         }
 
+                        // Check if the response contains a redirect header
+                        const redirectUrl = response.headers.get('X-Catchy-Redirect');
+                        if (redirectUrl) {
+                            const flashHeader = response.headers.get('X-Catchy-Flash');
+                            if (flashHeader) {
+                                try {
+                                    const binaryString = atob(flashHeader);
+                                    const bytes = new Uint8Array(binaryString.length);
+                                    for (let i = 0; i < binaryString.length; i++) {
+                                        bytes[i] = binaryString.charCodeAt(i);
+                                    }
+                                    const flashJson = new TextDecoder('utf-8').decode(bytes);
+                                    const flash = JSON.parse(flashJson);
+                                    window.dispatchEvent(new CustomEvent('catchy:flash', { detail: flash }));
+                                    window.dispatchEvent(new CustomEvent('catchy-flash', { detail: flash }));
+                                } catch (e) {
+                                    console.error('Catchy: Failed to decode X-Catchy-Flash header', e);
+                                }
+                            }
+
+                            visit(redirectUrl, {}, updateHistory);
+                            return;
+                        }
+
                         const contentType = response.headers.get('content-type');
                         if (!contentType || !contentType.includes('text/html')) {
                             window.location.href = response.url || url;
@@ -402,6 +426,7 @@
                                 const flashJson = new TextDecoder('utf-8').decode(bytes);
                                 const flash = JSON.parse(flashJson);
                                 window.dispatchEvent(new CustomEvent('catchy:flash', { detail: flash }));
+                                window.dispatchEvent(new CustomEvent('catchy-flash', { detail: flash }));
                             } catch (e) {
                                 console.error('Catchy: Failed to decode X-Catchy-Flash header', e);
                             }
@@ -438,6 +463,14 @@
                     const modal = document.querySelector('[catchy-modal]') || document.getElementById('catchy-modal');
                     if (modal) {
                         modal.dispatchEvent(new CustomEvent('catchy:modal-load', {
+                            bubbles: true,
+                            detail: {
+                                html: incomingContent.innerHTML,
+                                title: doc.title || ''
+                            }
+                        }));
+                        modal.dispatchEvent(new CustomEvent('catchy-modal-load', {
+                            bubbles: true,
                             detail: {
                                 html: incomingContent.innerHTML,
                                 title: doc.title || ''
@@ -462,7 +495,12 @@
                     // Form inside modal submitted successfully -> close modal & morph the main layout container
                     const modal = document.querySelector('[catchy-modal]') || document.getElementById('catchy-modal');
                     if (modal) {
-                        modal.dispatchEvent(new CustomEvent('catchy:modal-close'));
+                        modal.dispatchEvent(new CustomEvent('catchy:modal-close', {
+                            bubbles: true
+                        }));
+                        modal.dispatchEvent(new CustomEvent('catchy-modal-close', {
+                            bubbles: true
+                        }));
                     }
 
                     const mainContainer = document.getElementById(config.containerId);

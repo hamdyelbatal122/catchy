@@ -76,6 +76,34 @@ class CatchySPAMiddleware
         // 3. Process the request to get the response
         $response = $next($request);
 
+        // Intercept redirects and convert them to 200 OK with X-Catchy-Redirect header to preserve SPA routing and headers
+        if ($response->isRedirection()) {
+            $redirectUrl = $response->headers->get('Location');
+            $flash = [];
+            if ($request->hasSession()) {
+                foreach (['success', 'error', 'warning', 'info', 'status'] as $key) {
+                    if ($request->session()->has($key)) {
+                        $flash[$key] = $request->session()->get($key);
+                    }
+                }
+            }
+
+            $headers = [
+                'X-Catchy-Redirect' => $redirectUrl,
+                'X-Catchy-SPA' => 'true',
+            ];
+
+            if (!empty($flash)) {
+                $headers['X-Catchy-Flash'] = base64_encode(json_encode($flash));
+            }
+
+            if ($serverVersion !== '') {
+                $headers['X-Catchy-Version'] = $serverVersion;
+            }
+
+            return response('', 200, $headers);
+        }
+
         // 4. Append the current version header to the response
         if ($serverVersion !== '') {
             $response->headers->set('X-Catchy-Version', $serverVersion);

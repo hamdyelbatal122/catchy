@@ -42,6 +42,10 @@ class MiddlewareTest extends TestCase
             Route::get('/no-container', function () {
                 return '<!DOCTYPE html><html><head><title>No Container Page</title></head><body><p>Hello World without container</p></body></html>';
             });
+
+            Route::get('/redirect-route', function () {
+                return redirect('/html-page');
+            });
         });
     }
 
@@ -195,5 +199,20 @@ class MiddlewareTest extends TestCase
         $flash = json_decode(base64_decode($response->headers->get('X-Catchy-Flash')), true);
         $this->assertEquals('Operation completed successfully!', $flash['success']);
         $this->assertEquals('Something went wrong!', $flash['error']);
+    }
+
+    /**
+     * Verify that SPA redirect requests are converted to 200 with X-Catchy-Redirect header.
+     */
+    public function test_spa_redirect_returns_200_with_redirect_header(): void
+    {
+        $response = $this->get('/redirect-route', [
+            'X-Catchy-SPA' => 'true'
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertTrue($response->headers->has('X-Catchy-Redirect'));
+        $this->assertEquals(url('/html-page'), $response->headers->get('X-Catchy-Redirect'));
+        $this->assertEmpty($response->getContent());
     }
 }
