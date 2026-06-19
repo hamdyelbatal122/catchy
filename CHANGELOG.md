@@ -5,6 +5,27 @@ All notable changes to `Laravel Catchy` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.3] - 2026-06-19
+
+### Added
+- Added `FlashExtractor` helper to consolidate session flash extraction across pipeline stages.
+- Added viewport prefetch concurrency queue with a limit of 3 in `prefetch.js`.
+- Added max cache size constraint of 50 with LRU eviction to cache system.
+
+### Fixed
+- Fixed security issue (SEC-01) by removing unsafe `new Function` eval fallback in `executeCallback`.
+- Fixed security issue (SEC-02) by sanitizing config global JSON output using `JSON_HEX_TAG` flags.
+- Fixed security issue (SEC-03) by ensuring CSRF token is correctly injected inside `sync` directive form payloads.
+- Fixed BUG-03 by implementing correct XPath character escaping in HTML response extraction.
+- Fixed BUG-04 by preserving and restoring `libxml_use_internal_errors` global state thread-safely.
+- Fixed BUG-06 by ensuring proper `_method` spoofing parameters fallback in AJAX form submissions.
+- Fixed BUG-07/CQ-07 by replacing duplicate toast IDs with unique incremental counters.
+- Fixed BUG-08 by ignoring `mailto:`, `tel:`, `blob:`, and `data:` protocols in SPA routing.
+- Fixed BUG-10 by aligning scroll preservation to accept both `keep` and `preserve` properties.
+- Refactored pipeline stages to clone `Response` objects before headers mutation (`withResponse` pattern).
+- Cached components list in `ConfigComponentRepository` constructor.
+- Added return type safety to all middleware pipeline stages.
+
 ## [1.1.6] - 2026-06-13
 
 ### Fixed
