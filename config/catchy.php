@@ -38,21 +38,7 @@ return [
 
     'version' => '',
 
-    /*
-    |--------------------------------------------------------------------------
-    | Include Alpine Morph CDN Script
-    |--------------------------------------------------------------------------
-    |
-    | When set to true, the @catchyScripts Blade directive will automatically
-    | inject the @alpinejs/morph plugin CDN script. If you already bundle
-    | the Morph plugin locally in your JavaScript bundle (e.g. via Vite),
-    | set this to false to avoid loading the CDN script.
-    |
-    | Default: true
-    |
-    */
 
-    'include_morph' => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -69,6 +55,18 @@ return [
         'delay' => 75,       // Hover delay in milliseconds to verify user intent
         'ttl' => 30000,      // Cache lifetime in milliseconds (default: 30s)
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Stale-While-Revalidate (SWR) Caching
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, Catchy will serve cached pages instantly and fetch fresh
+    | copies in the background, morphing the DOM when updates complete.
+    |
+    */
+
+    'swr' => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -134,6 +132,21 @@ return [
         'input'     => 'catchy-input',
         'textarea'  => 'catchy-textarea',
         'select'    => 'catchy-select',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Excluded Routes
+    |--------------------------------------------------------------------------
+    |
+    | Define URI patterns that should skip SPA routing. Useful for webhook URLs,
+    | stripe callback routes, payment gateways, or custom admin packages.
+    |
+    */
+
+    'except' => [
+        // 'api/*',
+        // 'stripe/*',
     ],
 
 ];

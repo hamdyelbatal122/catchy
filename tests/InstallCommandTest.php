@@ -54,11 +54,12 @@ class InstallCommandTest extends TestCase
             ->expectsConfirmation('Do you want to generate a pre-configured SPA layouts template?', 'yes')
             ->assertExitCode(0);
 
-        // Verify layout generation and its contents
         $this->assertTrue(File::exists($layoutPath));
         $this->assertStringContainsString('id="catchy-app"', File::get($layoutPath));
         $this->assertStringContainsString('@catchyScripts', File::get($layoutPath));
         $this->assertStringContainsString('<x-catchy-progress', File::get($layoutPath));
         $this->assertStringContainsString('<x-catchy-toast', File::get($layoutPath));
+        $this->assertStringContainsString('@vite', File::get($layoutPath));
+        $this->assertStringNotContainsString('tailwindcss.com', File::get($layoutPath));
     }
 }

@@ -78,8 +78,7 @@ class ServiceProviderTest extends TestCase
     {
         $html = Blade::render('@catchyScripts');
 
-        // Verify that the rendered HTML contains the morph script, config settings, and inline plugin code
-        $this->assertStringContainsString('https://cdn.jsdelivr.net/npm/@alpinejs/morph', $html);
+        // Verify that the rendered HTML contains config settings, and inline plugin code
         $this->assertStringContainsString('window.CatchyConfig =', $html);
         $this->assertStringContainsString('Hamzi/Catchy - Alpine.js SPA Plugin', $html);
         $this->assertStringContainsString('CatchyPlugin', $html);

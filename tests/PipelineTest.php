@@ -160,4 +160,39 @@ class PipelineTest extends TestCase
         $this->assertEquals(base64_encode('Page Title'), $resp->headers->get('X-Catchy-Title'));
         $this->assertEquals(base64_encode('<link rel="stylesheet">'), $resp->headers->get('X-Catchy-Head'));
     }
+
+    /**
+     * Test the ExtractResponseContainer pipeline stage when custom target headers are provided.
+     */
+    public function test_extract_response_container_handles_custom_target_header(): void
+    {
+        $extractor = $this->createMock(ResponseExtractorInterface::class);
+
+        // Expect the extractor to be queried for 'my-custom-target' (with stripped '#')
+        $extractor->expects($this->once())
+            ->method('extractAll')
+            ->with($this->anything(), 'my-custom-target')
+            ->willReturn([
+                'title' => 'Target Title',
+                'head' => null,
+                'fragment' => '<div id="my-custom-target">Target Content</div>'
+            ]);
+
+        $request = new Request();
+        $request->headers->set('X-Catchy-Target', '#my-custom-target');
+
+        $response = new Response('<html><head><title>Original</title></head><body><div id="my-custom-target">Original</div></body></html>');
+        $response->headers->set('Content-Type', 'text/html');
+
+        $data = new CatchyPipelineData($request, $response);
+        $stage = new ExtractResponseContainer($extractor);
+
+        $result = $stage->handle($data, function (CatchyPipelineData $d) {
+            return $d;
+        });
+
+        $resp = $result->getResponse();
+        $this->assertEquals('<div id="my-custom-target">Target Content</div>', $resp->getContent());
+        $this->assertEquals(base64_encode('Target Title'), $resp->headers->get('X-Catchy-Title'));
+    }
 }

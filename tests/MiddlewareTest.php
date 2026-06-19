@@ -205,4 +205,22 @@ class MiddlewareTest extends TestCase
         $this->assertEquals(url('/html-page'), $response->headers->get('X-Catchy-Redirect'));
         $this->assertEmpty($response->getContent());
     }
+
+    /**
+     * Verify that excluded routes in configuration are not intercepted by the middleware.
+     */
+    public function test_excluded_routes_are_not_intercepted(): void
+    {
+        config(['catchy.except' => ['html-page']]);
+
+        $response = $this->get('/html-page', [
+            'X-Catchy-SPA' => 'true'
+        ]);
+
+        // The response should NOT be intercepted (so it will return full HTML instead of just main container)
+        $response->assertStatus(200);
+        $response->assertSee('<!DOCTYPE html>', false);
+        $response->assertSee('<header>Nav</header>', false);
+        $this->assertFalse($response->headers->has('X-Catchy-Title'));
+    }
 }

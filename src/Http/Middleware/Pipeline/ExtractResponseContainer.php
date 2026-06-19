@@ -50,7 +50,11 @@ class ExtractResponseContainer
             $content = $response->getContent();
 
             if (!empty($content)) {
-                $containerId = config('catchy.container_id', 'catchy-app');
+                $request = $data->getRequest();
+                $containerId = $request->header('X-Catchy-Target', config('catchy.container_id', 'catchy-app'));
+                if (str_starts_with($containerId, '#')) {
+                    $containerId = substr($containerId, 1);
+                }
 
                 // Extract title, head, and container in a single DOM parse operation
                 $result = $this->extractor->extractAll($content, $containerId);

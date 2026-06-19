@@ -33,7 +33,7 @@ No complex JavaScript builds. No routing overhead. **100% SEO-friendly. Dynamic 
 - **Scroll Retention Control**: Easily bypass the default scroll-to-top behavior on transitions using `data-catchy-scroll="keep"`.
 - **Inline Validation Error Management**: Render dynamic field error elements (`<x-catchy-error>`) that display Laravel validation messages on the fly.
 - **Localization Integration**: Translatable component strings, fully customizable via standard Laravel language publishing.
-- **Optimized Caching & CDN**: Offers in-memory directive caching and asset publishing to let the browser cache the script file, saving ~40KB of HTML payload per page load.
+- **Optimized Caching & Bundling**: Offers in-memory directive caching and asset publishing to let the browser cache the script file, saving ~40KB of HTML payload per page load.
 - **Graceful degradation**: Seamlessly falls back to regular page loads on server errors, external redirects, or slow connections.
 
 ---
@@ -102,29 +102,26 @@ php artisan vendor:publish --tag=catchy-translations
 
 ## Setup & Frontend Integration
 
-Catchy can be loaded dynamically via Blade directives (CDN mode) or bundled locally using modern asset managers like Vite (NPM mode).
+Catchy can be loaded as a pre-compiled standalone script (automatic local asset mode) or bundled locally inside your application using modern asset bundlers like Vite (NPM Mode).
 
-### Method A: CDN/Blade Directive (Zero Configuration)
-If you prefer not to compile assets via NPM, simply add the `@catchyScripts` Blade directive before the closing `</body>` tag in your layout. By default, it will automatically inject `@alpinejs/morph` from UNPKG CDN and initialize the plugin.
+### Method A: Standalone Script (Plug & Play - Zero Configuration)
+Simply add the `@catchyScripts` Blade directive before the closing `</body>` tag in your layout. This will load the pre-compiled asset `public/vendor/catchy/catchy.js` published during `php artisan catchy:install`.
 
-Ensure your layout has Alpine.js loaded:
 ```html
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    ...
+    @catchyScripts
+</body>
 ```
 
-### Method B: NPM/Vite Bundler (Recommended for Production)
-1. Turn off CDN morph auto-injection in `config/catchy.php`:
-```php
-'include_morph' => false,
-```
+### Method B: NPM/Vite Bundler (Recommended for Custom Bundles)
+If you want to bundle Catchy inside your main `app.js` using Vite to reduce network requests:
 
-2. Install Alpine.js, the morph plugin, and Catchy via NPM:
+1. Install Alpine.js, its Morph plugin, and Catchy via NPM:
 ```bash
-npm install alpinejs @alpinejs/morph
-npm install hamzi-catchy
+npm install alpinejs @alpinejs/morph hamzi-catchy
 ```
 
-3. Import and register the plugins in your `resources/js/app.js`:
+2. Import and register the plugins in your `resources/js/app.js`:
 ```javascript
 import Alpine from 'alpinejs';
 import morph from '@alpinejs/morph';

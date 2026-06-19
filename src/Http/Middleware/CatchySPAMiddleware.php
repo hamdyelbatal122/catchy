@@ -52,13 +52,18 @@ class CatchySPAMiddleware
             return $next($request);
         }
 
-        // 2. Process request to get the initial response
+        // 2. Skip middleware if the route is explicitly excluded
+        if ($this->shouldExclude($request)) {
+            return $next($request);
+        }
+
+        // 3. Process request to get the initial response
         $response = $next($request);
 
-        // 3. Wrap request and response in value object
+        // 4. Wrap request and response in value object
         $pipelineData = new CatchyPipelineData($request, $response);
 
-        // 4. Resolve the configured pipeline stages
+        // 5. Resolve the configured pipeline stages
         $stages = config('catchy.pipeline', []);
 
         /** @var CatchyPipelineData $processed */
@@ -68,5 +73,28 @@ class CatchySPAMiddleware
             ->then(fn (CatchyPipelineData $data) => $data);
 
         return $processed->getResponse();
+    }
+
+    /**
+     * Determine if the request matches any of the configured exclusion patterns.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return bool
+     */
+    protected function shouldExclude(Request $request): bool
+    {
+        $excepts = config('catchy.except', []);
+
+        foreach ($excepts as $except) {
+            if ($except !== '/') {
+                $except = trim($except, '/');
+            }
+
+            if ($request->fullUrlIs($except) || $request->is($except)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

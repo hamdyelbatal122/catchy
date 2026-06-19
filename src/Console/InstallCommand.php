@@ -79,8 +79,16 @@ class InstallCommand extends Command
             $this->generateLayout();
         }
 
-        $this->info("\n🎉 Hamzi/Catchy has been installed successfully!");
-        $this->info("Make sure to register CatchySPAMiddleware in bootstrap/app.php or apply the 'catchy' middleware group to your routes.\n");
+        $this->info("\n Hamzi/Catchy has been installed successfully!");
+        $this->info("Make sure to register CatchySPAMiddleware in bootstrap/app.php or apply the 'catchy' middleware group to your routes.");
+        
+        $this->comment("\n💡 JavaScript Integration Options:");
+        $this->line("  1. [Standalone Mode]: `@catchyScripts` will load the pre-compiled asset directly.");
+        $this->line("  2. [Vite/NPM Mode]: If you want to bundle Catchy inside your app.js, run:");
+        $this->info("     npm install");
+        $this->line("     And register the plugin in resources/js/app.js:");
+        $this->comment("     import CatchyPlugin from 'hamzi-catchy';");
+        $this->comment("     Alpine.plugin(CatchyPlugin);\n");
 
         return 0;
     }
@@ -116,13 +124,8 @@ class InstallCommand extends Command
 
     <title>{{ $title ?? config('app.name', 'Laravel SPA') }}</title>
 
-    <!-- Tailwind CSS (CDN Example or substitute with your @vite configuration) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-        }
-    </script>
+    <!-- Styles & Scripts compiled via Vite (NPM dependencies) -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen antialiased">
 
