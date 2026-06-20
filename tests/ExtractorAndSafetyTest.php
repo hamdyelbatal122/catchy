@@ -34,6 +34,19 @@ class ExtractorAndSafetyTest extends TestCase
     }
 
     /**
+     * Test HtmlResponseExtractor behaves correctly with UTF-8 Arabic titles.
+     */
+    public function test_extractor_handles_utf8_arabic_title(): void
+    {
+        $html = '<!DOCTYPE html><html><head><title>صفحة تجريبية 🚀</title></head><body><div id="catchy-app">محتوى</div></body></html>';
+        $extractor = new HtmlResponseExtractor;
+
+        $result = $extractor->extractAll($html, 'catchy-app');
+
+        $this->assertEquals('صفحة تجريبية 🚀', $result['title']);
+    }
+
+    /**
      * Test HtmlResponseExtractor XPath escaping protects against single and double quotes.
      */
     public function test_extractor_escapes_xpath_container_ids(): void

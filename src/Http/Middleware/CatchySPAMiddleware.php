@@ -39,14 +39,20 @@ class CatchySPAMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // 1. Detect if this is an SPA request from Catchy
-        if (! $request->headers->has('X-Catchy-SPA')) {
+        // 1. Skip middleware if the route is explicitly excluded
+        if ($this->shouldExclude($request)) {
             return $next($request);
         }
 
-        // 2. Skip middleware if the route is explicitly excluded
-        if ($this->shouldExclude($request)) {
-            return $next($request);
+        // 2. Detect if this is NOT an SPA request from Catchy
+        if (! $request->headers->has('X-Catchy-SPA')) {
+            $response = $next($request);
+
+            if (config('catchy.auto_inject', true) && $this->isHtmlResponse($response)) {
+                $response = $this->injectScripts($response);
+            }
+
+            return $response;
         }
 
         // 3. Process request to get the initial response
@@ -65,6 +71,37 @@ class CatchySPAMiddleware
             ->then(fn (CatchyPipelineData $data) => $data);
 
         return $processed->getResponse();
+    }
+
+    /**
+     * Determine if the response is a standard HTML page response.
+     */
+    protected function isHtmlResponse(Response $response): bool
+    {
+        $contentType = $response->headers->get('Content-Type');
+
+        return $contentType !== null && str_contains($contentType, 'text/html');
+    }
+
+    /**
+     * Inject Catchy SPA scripts before the closing </body> tag of the response.
+     */
+    protected function injectScripts(Response $response): Response
+    {
+        $content = $response->getContent();
+
+        if ($content === false) {
+            return $response;
+        }
+
+        $pos = strripos($content, '</body>');
+        if ($pos !== false) {
+            $scriptsHtml = view('catchy::scripts', ['jsPath' => \Hamzi\Catchy\CatchyServiceProvider::getJsPath()])->render();
+            $content = substr($content, 0, $pos) . $scriptsHtml . substr($content, $pos);
+            $response->setContent($content);
+        }
+
+        return $response;
     }
 
     /**

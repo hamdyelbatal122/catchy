@@ -75,14 +75,14 @@ class InstallCommand extends Command
             $this->generateLayout();
         }
 
-        $this->info("\n Hamzi/Catchy has been installed successfully!");
-        $this->info("Make sure to register CatchySPAMiddleware in bootstrap/app.php or apply the 'catchy' middleware group to your routes.");
+        $this->info("\n Hamzi/Catchy has been installed successfully! 🎉");
+        $this->info("Middleware and script auto-injection are now active. Standard HTML page visits will automatically run as SPA requests.");
 
-        $this->comment("\n💡 JavaScript Integration Options:");
-        $this->line('  1. [Standalone Mode]: `@catchyScripts` will load the pre-compiled asset directly.');
-        $this->line('  2. [Vite/NPM Mode]: If you want to bundle Catchy inside your app.js:');
+        $this->comment("\n💡 Standalone Mode vs Vite/NPM Mode:");
+        $this->line('  - [Standalone Mode] (Default): Catchy scripts are auto-injected. No extra setup required!');
+        $this->line('  - [Vite/NPM Mode] (Optional): Disable auto-injection (\'auto_inject\' => false in config) and compile in resources/js/app.js:');
         $this->info('     npm install alpinejs @alpinejs/morph');
-        $this->line('     And import and register the plugin in resources/js/app.js:');
+        $this->line('     And import and register:');
         $this->comment("     import CatchyPlugin from '../../public/vendor/catchy/catchy.js';");
         $this->comment("     Alpine.plugin(morph);");
         $this->comment("     Alpine.plugin(CatchyPlugin);\n");

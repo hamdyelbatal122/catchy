@@ -61,6 +61,12 @@ class CatchyServiceProvider extends ServiceProvider
     protected function registerMiddleware(): void
     {
         $this->app['router']->aliasMiddleware('catchy', CatchySPAMiddleware::class);
+
+        // Automatically append the middleware to the 'web' group for ease of installation
+        if ($this->app->bound(\Illuminate\Contracts\Http\Kernel::class)) {
+            $kernel = $this->app->make(\Illuminate\Contracts\Http\Kernel::class);
+            $kernel->appendMiddlewareToGroup('web', CatchySPAMiddleware::class);
+        }
     }
 
     /**
@@ -145,9 +151,12 @@ class CatchyServiceProvider extends ServiceProvider
     protected function autoPublishAssets(): void
     {
         $targetPath = public_path('vendor/catchy/catchy.js');
-        if (! file_exists($targetPath)) {
-            $sourcePath = __DIR__.'/../resources/js/catchy.js';
-            if (file_exists($sourcePath)) {
+        $sourcePath = __DIR__.'/../resources/js/catchy.js';
+
+        if (file_exists($sourcePath)) {
+            $shouldCopy = ! file_exists($targetPath) || filemtime($sourcePath) > filemtime($targetPath);
+
+            if ($shouldCopy) {
                 $dir = dirname($targetPath);
                 if (! is_dir($dir)) {
                     mkdir($dir, 0755, true);

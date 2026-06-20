@@ -219,4 +219,47 @@ class MiddlewareTest extends TestCase
         $response->assertSee('<header>Nav</header>', false);
         $this->assertFalse($response->headers->has('X-Catchy-Title'));
     }
+
+    /**
+     * Verify that when auto_inject is true, Catchy scripts are automatically injected into HTML responses.
+     */
+    public function test_scripts_are_automatically_injected_into_html_responses(): void
+    {
+        config(['catchy.auto_inject' => true]);
+
+        // Request standard HTML page without X-Catchy-SPA header
+        $response = $this->get('/html-page');
+
+        $response->assertStatus(200);
+        $response->assertSee('window.CatchyConfig', false);
+        $response->assertSee('catchy.js', false);
+        $response->assertSee('</body>', false);
+    }
+
+    /**
+     * Verify that when auto_inject is false, Catchy scripts are NOT automatically injected.
+     */
+    public function test_scripts_are_not_injected_when_auto_inject_is_disabled(): void
+    {
+        config(['catchy.auto_inject' => false]);
+
+        $response = $this->get('/html-page');
+
+        $response->assertStatus(200);
+        $response->assertDontSee('window.CatchyConfig', false);
+        $response->assertDontSee('catchy.js', false);
+    }
+
+    /**
+     * Verify that Catchy scripts are NOT injected into non-HTML responses (e.g. JSON responses).
+     */
+    public function test_scripts_are_not_injected_into_non_html_responses(): void
+    {
+        config(['catchy.auto_inject' => true]);
+
+        $response = $this->get('/json-response');
+
+        $response->assertStatus(200);
+        $response->assertDontSee('window.CatchyConfig', false);
+    }
 }

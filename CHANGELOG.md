@@ -5,6 +5,18 @@ All notable changes to `Laravel Catchy` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.7] - 2026-06-20
+
+### Added
+- Added automatic registration of `CatchySPAMiddleware` to the global `web` middleware group.
+- Added automatic injection of compiled scripts/styles into standard HTML responses before `</body>`.
+- Added `'auto_inject' => true` configuration setting to toggle script injection.
+- Added Arabic UTF-8 title extraction verification tests.
+
+### Changed
+- Simplified package setup by removing manual middleware registration and `@catchyScripts` layout setup.
+- Optimized local asset auto-publishing to overwrite targets when package source assets are updated.
+
 ## [1.4.6] - 2026-06-20
 
 ### Added

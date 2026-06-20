@@ -36,35 +36,17 @@
 composer require hamzi/catchy
 ```
 
-### 2. Register Middleware
-Append the middleware to the `web` group in `bootstrap/app.php`:
-```php
-use Hamzi\Catchy\Http\Middleware\CatchySPAMiddleware;
-
-->withMiddleware(function (Middleware $middleware) {
-    $middleware->web(append: [
-        CatchySPAMiddleware::class,
-    ]);
-})
-```
-
-### 3. Add Script Directive
-Place the `@catchyScripts` directive before the closing `</body>` tag in your layout:
-```html
-    ...
-    @catchyScripts
-</body>
-```
-
-### 4. Publish Configuration & Assets (Recommended)
-Publish assets to enable browser caching of the SPA script, customize defaults, and translate messages:
+### 2. Run Installation Command
+This will publish the configuration file, compiled assets, and set up everything:
 ```bash
-# Publish config
-php artisan vendor:publish --tag=catchy-config
-
-# Publish public assets (Highly recommended - saves ~40KB payload per request)
-php artisan vendor:publish --tag=catchy-assets
+php artisan catchy:install
 ```
+
+And you are done! Catchy's middleware is automatically registered to the `web` group, and the SPA routing scripts are automatically injected before the closing `</body>` tag on all standard HTML responses.
+
+---
+
+## 🎨 Styling Presets & Customization
 
 ---
 

@@ -25,6 +25,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Auto Inject Scripts
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, Catchy will automatically inject the required SPA routing
+    | scripts into standard HTML responses before the </body> tag.
+    | Set to false if you want to manually insert @catchyScripts in your layouts.
+    |
+    */
+
+    'auto_inject' => true,
+
+    /*
+    |--------------------------------------------------------------------------
     | Catchy Asset Version
     |--------------------------------------------------------------------------
     |
