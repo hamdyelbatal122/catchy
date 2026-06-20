@@ -194,4 +194,27 @@ class PipelineTest extends TestCase
         $this->assertEquals('<div id="my-custom-target">Target Content</div>', $resp->getContent());
         $this->assertEquals(base64_encode('Target Title'), $resp->headers->get('X-Catchy-Title'));
     }
+
+    /**
+     * Test that all core pipeline stages implement the PipelineStageInterface contract.
+     */
+    public function test_pipeline_stages_implement_pipeline_stage_interface(): void
+    {
+        $this->assertInstanceOf(
+            \Hamzi\Catchy\Domain\Contracts\PipelineStageInterface::class,
+            new VerifyAssetVersion($this->createMock(VersionRepositoryInterface::class))
+        );
+        $this->assertInstanceOf(
+            \Hamzi\Catchy\Domain\Contracts\PipelineStageInterface::class,
+            new HandleRedirectResponse($this->createMock(VersionRepositoryInterface::class))
+        );
+        $this->assertInstanceOf(
+            \Hamzi\Catchy\Domain\Contracts\PipelineStageInterface::class,
+            new AppendResponseHeaders($this->createMock(VersionRepositoryInterface::class))
+        );
+        $this->assertInstanceOf(
+            \Hamzi\Catchy\Domain\Contracts\PipelineStageInterface::class,
+            new ExtractResponseContainer($this->createMock(ResponseExtractorInterface::class))
+        );
+    }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Hamzi\Catchy\Http\Middleware\Pipeline;
 
 use Closure;
+use Hamzi\Catchy\Domain\Contracts\PipelineStageInterface;
 use Hamzi\Catchy\Domain\Contracts\VersionRepositoryInterface;
 use Hamzi\Catchy\Domain\ValueObjects\CatchyPipelineData;
 use Hamzi\Catchy\Support\FlashExtractor;
@@ -15,7 +16,7 @@ use Hamzi\Catchy\Support\FlashExtractor;
  * Pipeline stage adding asset versions and session flash messages (encoded as base64 JSON)
  * directly to the HTTP response headers for processing in the frontend SPA router.
  */
-class AppendResponseHeaders
+class AppendResponseHeaders implements PipelineStageInterface
 {
     /**
      * The asset version repository instance.

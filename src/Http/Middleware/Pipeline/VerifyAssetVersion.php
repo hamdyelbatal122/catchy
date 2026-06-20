@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Hamzi\Catchy\Http\Middleware\Pipeline;
 
 use Closure;
+use Hamzi\Catchy\Domain\Contracts\PipelineStageInterface;
 use Hamzi\Catchy\Domain\Contracts\VersionRepositoryInterface;
 use Hamzi\Catchy\Domain\ValueObjects\CatchyPipelineData;
 
@@ -14,7 +15,7 @@ use Hamzi\Catchy\Domain\ValueObjects\CatchyPipelineData;
  * Pipeline stage verifying client asset build versions against the server.
  * Returns a 409 Conflict if they mismatch to force a clean reload on the client.
  */
-class VerifyAssetVersion
+class VerifyAssetVersion implements PipelineStageInterface
 {
     /**
      * The asset version repository instance.
