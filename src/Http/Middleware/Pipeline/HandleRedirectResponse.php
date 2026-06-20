@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Hamzi\Catchy\Http\Middleware\Pipeline;
 
 use Closure;
+use Hamzi\Catchy\Domain\Contracts\PipelineStageInterface;
 use Hamzi\Catchy\Domain\Contracts\VersionRepositoryInterface;
 use Hamzi\Catchy\Domain\ValueObjects\CatchyPipelineData;
 use Hamzi\Catchy\Support\FlashExtractor;
@@ -15,7 +16,7 @@ use Hamzi\Catchy\Support\FlashExtractor;
  * Pipeline stage intercepting redirect responses and rewriting them to
  * standard 200 OK headers for client-side SPA routing redirection.
  */
-class HandleRedirectResponse
+class HandleRedirectResponse implements PipelineStageInterface
 {
     /**
      * The asset version repository instance.

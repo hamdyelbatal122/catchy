@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Hamzi\Catchy\Http\Middleware\Pipeline;
 
 use Closure;
+use Hamzi\Catchy\Domain\Contracts\PipelineStageInterface;
 use Hamzi\Catchy\Domain\Contracts\ResponseExtractorInterface;
 use Hamzi\Catchy\Domain\ValueObjects\CatchyPipelineData;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,7 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
  * Pipeline stage intercepting successful HTML responses to extract only the target SPA container,
  * page title, and head updates, updating the response body and appending headers.
  */
-class ExtractResponseContainer
+class ExtractResponseContainer implements PipelineStageInterface
 {
     /**
      * The response extractor instance.
