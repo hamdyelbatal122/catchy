@@ -5,6 +5,17 @@ All notable changes to `Laravel Catchy` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.6] - 2026-06-20
+
+### Added
+- Added local compiled asset Vite/NPM import path instructions in README and InstallCommand.
+
+### Changed
+- Refactored `form.blade.php` to delegate dynamic attribute compilation directly to `CatchyDirective::render()`, removing duplication.
+- Refactored `catchyLazy` Alpine component to use shared `executeScriptsInContainer` utility, removing duplicate script parsing.
+- Refactored `textarea.blade.php` to bind `value` reactively via `x-model` when `autoGrow` is enabled.
+- Bumped package version metadata.
+
 ## [1.4.5] - 2026-06-20
 
 ### Added

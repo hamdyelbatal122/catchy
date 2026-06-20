@@ -80,10 +80,11 @@ class InstallCommand extends Command
 
         $this->comment("\n💡 JavaScript Integration Options:");
         $this->line('  1. [Standalone Mode]: `@catchyScripts` will load the pre-compiled asset directly.');
-        $this->line('  2. [Vite/NPM Mode]: If you want to bundle Catchy inside your app.js, run:');
-        $this->info('     npm install');
-        $this->line('     And register the plugin in resources/js/app.js:');
-        $this->comment("     import CatchyPlugin from 'hamzi-catchy';");
+        $this->line('  2. [Vite/NPM Mode]: If you want to bundle Catchy inside your app.js:');
+        $this->info('     npm install alpinejs @alpinejs/morph');
+        $this->line('     And import and register the plugin in resources/js/app.js:');
+        $this->comment("     import CatchyPlugin from '../../public/vendor/catchy/catchy.js';");
+        $this->comment("     Alpine.plugin(morph);");
         $this->comment("     Alpine.plugin(CatchyPlugin);\n");
 
         return 0;

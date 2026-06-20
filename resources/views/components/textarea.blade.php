@@ -29,12 +29,14 @@
             @if ($helper) aria-describedby="{{ $name }}-helper" @endif
             @if ($autoGrow)
                 x-data="{ 
+                    value: @js((string) ($value ?? $slot)),
                     resize() { 
                         this.$el.style.height = 'auto'; 
                         this.$el.style.height = this.$el.scrollHeight + 'px'; 
                     } 
                 }"
                 x-init="resize(); $watch('value', () => $nextTick(() => resize()))"
+                x-model="value"
                 x-on:input="resize()"
             @endif
             {{ $attributes->merge([

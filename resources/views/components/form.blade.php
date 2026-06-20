@@ -14,38 +14,18 @@
     $formMethod = $method === 'GET' ? 'GET' : 'POST';
     $spoofMethod = !in_array($method, ['GET', 'POST']) ? $method : null;
 
-    $beforesendValue = $beforesend ?? $onbeforesend;
-    $successValue = $success ?? $onsuccess;
-    $errorValue = $error ?? $onerror;
-
-    // Build form attributes dynamically to avoid syntax issues in IDE formatters
-    $formAttributes = [
-        'x-data' => true,
-    ];
-
-    if ($beforesendValue) {
-        $formAttributes['@catchy:start'] = $beforesendValue;
-        $formAttributes['@catchy-start'] = $beforesendValue;
-        $formAttributes['data-catchy-beforesend'] = $beforesendValue;
-    }
-
-    if ($successValue) {
-        $formAttributes['@catchy:end'] = $successValue;
-        $formAttributes['@catchy-end'] = $successValue;
-        $formAttributes['data-catchy-success'] = $successValue;
-    }
-
-    if ($errorValue) {
-        $formAttributes['@catchy:error'] = $errorValue;
-        $formAttributes['@catchy-error'] = $errorValue;
-        $formAttributes['data-catchy-error'] = $errorValue;
-    }
+    $directiveOptions = array_filter([
+        'beforesend' => $beforesend ?? $onbeforesend,
+        'success' => $success ?? $onsuccess,
+        'error' => $error ?? $onerror,
+    ]);
 @endphp
 
 <form 
     action="{{ $action }}" 
     method="{{ $formMethod }}"
-    {{ $attributes->merge($formAttributes) }}
+    {!! \Hamzi\Catchy\Support\CatchyDirective::render($directiveOptions) !!}
+    {{ $attributes }}
 >
     @if($formMethod === 'POST')
         @csrf

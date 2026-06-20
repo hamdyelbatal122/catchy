@@ -204,15 +204,15 @@ Protect destructive actions from accidental clicks by displaying native or custo
 ### 4. NPM / Vite Bundler Mode (Alternative Integration)
 If you prefer packaging Catchy inside your `resources/js/app.js` using Vite instead of `@catchyScripts`:
 
-1. Install plugins via NPM:
+1. Install Alpine dependencies via NPM:
 ```bash
-npm install alpinejs @alpinejs/morph hamzi-catchy
+npm install alpinejs @alpinejs/morph
 ```
-2. Bundle inside `resources/js/app.js`:
+2. Bundle inside `resources/js/app.js` (importing the published Catchy asset):
 ```javascript
 import Alpine from 'alpinejs';
 import morph from '@alpinejs/morph';
-import Catchy from 'hamzi-catchy';
+import Catchy from '../../public/vendor/catchy/catchy.js';
 
 Alpine.plugin(morph);
 Alpine.plugin(Catchy);

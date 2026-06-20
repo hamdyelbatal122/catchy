@@ -5,7 +5,7 @@
  * Lifecycle trigger helpers for declarative actions (open/close/reset/toast/reload).
  */
 
-import { emit } from './utils.js';
+import { emit, executeScriptsInContainer } from './utils.js';
 
 /**
  * Resolves the target modal element based on the trigger or default selectors.
@@ -308,18 +308,8 @@ export function registerAlpineComponents(Alpine, config) {
 
                 this.$el.innerHTML = fragment.innerHTML;
                 this.loaded = true;
-
                 // Re-execute scripts within newly added content
-                const scripts = this.$el.querySelectorAll('script');
-                scripts.forEach(oldScript => {
-                    if (oldScript.hasAttribute('data-catchy-ignore')) return;
-                    const newScript = document.createElement('script');
-                    Array.from(oldScript.attributes).forEach(attr => {
-                        newScript.setAttribute(attr.name, attr.value);
-                    });
-                    newScript.textContent = oldScript.textContent;
-                    oldScript.parentNode.replaceChild(newScript, oldScript);
-                });
+                executeScriptsInContainer(this.$el);
 
                 emit('end', { trigger: this.$el });
             })
