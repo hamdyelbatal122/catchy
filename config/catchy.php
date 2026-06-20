@@ -147,16 +147,6 @@ return [
     |
     */
 
-    /*
-    |--------------------------------------------------------------------------
-    | Excluded Routes
-    |--------------------------------------------------------------------------
-    |
-    | Define URI patterns that should skip SPA routing. Useful for webhook URLs,
-    | stripe callback routes, payment gateways, or custom admin packages.
-    |
-    */
-
     'except' => [
         // 'api/*',
         // 'stripe/*',

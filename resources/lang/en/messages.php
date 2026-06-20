@@ -7,4 +7,5 @@ return [
     'help_text' => 'Any file format is accepted',
     'delete_file' => 'Delete file',
     'loading_lazy' => 'Loading content...',
+    'close' => 'Close',
 ];

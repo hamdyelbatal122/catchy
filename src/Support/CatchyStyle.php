@@ -37,12 +37,33 @@ class CatchyStyle
     }
 
     /**
+     * Cached preset dictionaries to avoid rebuilding on every call.
+     *
+     * @var array<string, array<string, string>>|null
+     */
+    protected static ?array $cachedPresets = null;
+
+    /**
      * Resolve class mapping from preset dictionaries.
      */
     protected static function resolvePresetClass(string $preset, string $key, mixed $default = null): mixed
     {
-        // Preset dictionaries for Tailwind, Bootstrap 5, and Vanilla CSS
-        $presets = [
+        // Build and cache preset dictionaries on first access
+        if (static::$cachedPresets === null) {
+            static::$cachedPresets = static::buildPresets();
+        }
+
+        return static::$cachedPresets[$preset][$key] ?? $default;
+    }
+
+    /**
+     * Build the preset dictionaries for Tailwind, Bootstrap 5, and Vanilla CSS.
+     *
+     * @return array<string, array<string, string>>
+     */
+    protected static function buildPresets(): array
+    {
+        return [
             'tailwind' => [
                 'alert.base' => 'flex p-4 rounded-xl border',
                 'alert.dismiss_btn' => 'inline-flex rounded-lg p-1.5 hover:bg-black/5 dark:hover:bg-white/5 focus:outline-none transition-colors',
@@ -172,6 +193,10 @@ class CatchyStyle
                 'spinner.colors.gray' => 'text-gray-400 dark:text-gray-500',
 
                 'toast.wrapper' => 'fixed z-[99998] flex flex-col gap-3 min-w-80 max-w-md',
+                'toast.types.success' => 'bg-emerald-50/95 dark:bg-emerald-950/90 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200',
+                'toast.types.error' => 'bg-rose-50/95 dark:bg-rose-950/90 border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200',
+                'toast.types.warning' => 'bg-amber-50/95 dark:bg-amber-950/90 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200',
+                'toast.types.info' => 'bg-sky-50/95 dark:bg-sky-950/90 border-sky-200 dark:border-sky-800 text-sky-800 dark:text-sky-200',
                 'toast.positions.top-right' => 'top-5 end-5',
                 'toast.positions.top-left' => 'top-5 start-5',
                 'toast.positions.bottom-right' => 'bottom-5 end-5',
@@ -323,6 +348,10 @@ class CatchyStyle
                 'spinner.colors.gray' => 'text-secondary',
 
                 'toast.wrapper' => 'toast-container position-fixed p-3',
+                'toast.types.success' => 'bg-success text-white',
+                'toast.types.error' => 'bg-danger text-white',
+                'toast.types.warning' => 'bg-warning text-dark',
+                'toast.types.info' => 'bg-info text-dark',
                 'toast.item_base' => 'toast show d-flex align-items-center p-2',
                 'toast.dismiss_btn' => 'btn-close ms-auto me-2',
 
@@ -468,6 +497,10 @@ class CatchyStyle
                 'spinner.colors.gray' => 'catchy-spinner-gray',
 
                 'toast.wrapper' => 'catchy-toast-container',
+                'toast.types.success' => 'catchy-toast-success',
+                'toast.types.error' => 'catchy-toast-error',
+                'toast.types.warning' => 'catchy-toast-warning',
+                'toast.types.info' => 'catchy-toast-info',
                 'toast.item_base' => 'catchy-toast',
                 'toast.dismiss_btn' => 'catchy-toast-close',
 
@@ -489,7 +522,5 @@ class CatchyStyle
                 'upload.error' => 'catchy-upload-error',
             ],
         ];
-
-        return $presets[$preset][$key] ?? $default;
     }
 }

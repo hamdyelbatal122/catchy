@@ -10,8 +10,8 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Class CatchyPipelineData
  *
- * Implements an immutable-like container encapsulating the active request and response state.
- * Allows stages to inspect the request and inspect/update the response.
+ * Encapsulates the active request and response state with copy-on-write semantics for the response.
+ * Note: The Request object is shared by reference and should not be mutated by pipeline stages.
  */
 final class CatchyPipelineData
 {

@@ -40,8 +40,8 @@
                 @foreach ($options as $val => $lbl)
                     @php
                         $isSelected = $multiple 
-                            ? (is_array($selected) && in_array($val, $selected)) 
-                            : ($selected == $val);
+                            ? (is_array($selected) && in_array($val, $selected, true)) 
+                            : ((string) $selected === (string) $val);
                     @endphp
                     <option value="{{ $val }}" @if($isSelected) selected @endif>
                         {{ $lbl }}
